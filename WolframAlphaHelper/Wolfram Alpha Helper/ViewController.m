@@ -12,6 +12,18 @@
 @property (strong, nonatomic) NSMutableArray *imagesHelper;
 @end
 
+@implementation NSString (URLEncoding)
+- (nullable NSString *)stringByAddingPercentEncodingForRFC3986 {
+    NSString *unreserved = @"-._~/?";
+    NSMutableCharacterSet *allowed = [NSMutableCharacterSet
+                                      alphanumericCharacterSet];
+    [allowed addCharactersInString:unreserved];
+    return [self
+            stringByAddingPercentEncodingWithAllowedCharacters:
+            allowed];
+}
+@end
+
 @implementation ViewController
 
 
@@ -112,7 +124,9 @@ NSMutableArray *myArray;
     [SVProgressHUD showWithStatus:@"Загрузка решения"];
     //example of pi
     NSString *queryExample = _valueFild.text;
-    NSString *urlString = [NSString stringWithFormat:@"%@input=%@&appid=%@&output=xml" , kQueryURL , queryExample , kAppID];
+    NSString* encodedUrl = [queryExample stringByAddingPercentEncodingForRFC3986];
+    NSLog(@"encodedUrl: %@", encodedUrl);
+    NSString *urlString = [NSString stringWithFormat:@"%@input=%@&appid=%@&output=xml" , kQueryURL , encodedUrl , kAppID];
     //input=log(4)&output=xml
     NSLog(@"url - %@ \n text - %@",[NSURL URLWithString:urlString], queryExample);
     [self makeRequestWithQuery:[NSURL URLWithString:urlString]];
@@ -127,10 +141,8 @@ NSMutableArray *myArray;
         
         NSLog(@"%@", item);
         message = [NSString stringWithFormat:@"%@\n%@", message, item];
-        //message = [message stringByAppendingString:[NSString stringWithFormat:@"- %@/n",item]];
     }
     
- //   message = [NSString stringWithFormat:@"%@", myArray];
     
     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"История"
                                                     message:message
